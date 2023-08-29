@@ -1,4 +1,5 @@
 # chatbot-Faiss-python
+please check Manual.pdf
 chatbot-Faiss-python by using Faiss/openai on flet
 it was for internal DB Set as faiss
 
