@@ -20,30 +20,6 @@ try:
 except:
     pass
 
-def textreader(filepaths:[],openai_api=OPENAI_API_KEY):
-    openai.api_key = openai_api
-    embeddings=OpenAIEmbeddings(openai_api_key=openai_api)
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
-
-    texts=[]
-    for filepath in filepaths:
-        basename = os.path.basename(filepath)
-        filenames=os.path.splitext(basename)
-        ext=filenames[1]
-        filename=filenames[0]
-        if ext.upper()==".PDF":
-            loader = PyPDFLoader(filepath)
-        elif ext.upper()==".DOCX":
-            loader = Docx2txtLoader(filepath)
-        else:
-            continue
-        document = loader.load()
-        text = text_splitter.split_documents(document)
-        texts.extend(text)
-        #metadata={'source': 'C:\\Users\\qkrwo\\Documents\\Digital\\chat_test\\Docs\\AWWA M45 3rd.pdf', 'page': 0}
-
-    print (text)
-
 def embedding_folder(filepaths:[],openai_api=OPENAI_API_KEY,resultpath=None):
     if resultpath==None:
         resultpath=os.path.dirname(filepaths[0])
@@ -71,14 +47,18 @@ def embedding_folder(filepaths:[],openai_api=OPENAI_API_KEY,resultpath=None):
         document = loader.load()
         text = text_splitter.split_documents(document)
 
-        #metadata={'source': 'C:\\Users\\qkrwo\\Documents\\Digital\\chat_test\\Docs\\AWWA M45 3rd.pdf', 'page': 0}
         faissdb = FAISS.from_documents(text, embeddings)
         faissdb.save_local(os.path.join(resultpath,f"{filename}_index"))
         doc_list.append(filename)
+        
         if faissdbs==[]:
             faissdbs=faissdb
         else:
             faissdbs.merge_from(faissdb)
+    resultpath=os.path.join(resultpath,"faiss_index")
+    if os.path.exists(resultpath):
+        faiss_old=FAISS.load_local(resultpath)
+        faissdbs.merge_from(faiss_old)
     faissdbs.save_local(os.path.join(resultpath,"faiss_index"))
-
+    
     return doc_list

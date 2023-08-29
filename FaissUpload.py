@@ -87,7 +87,7 @@ class FaissConvert(ft.UserControl):
     def build_page(self):
         self.page.controls.clear()
         self.openapi=self.page.session.get("OPENAI_API_KEY")
-        self.indextpath=self.page.session.get("FAISS_INDEX_PATH")
+        self.indexpath=self.page.session.get("FAISS_INDEX_PATH")
         return ft.Column(
             [
                 self.pick_files_dialog,

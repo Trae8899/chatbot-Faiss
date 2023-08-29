@@ -123,10 +123,10 @@ class VectorQAAI(ft.UserControl):
                 ft.dropdown.Option("Electrical"),
                 ft.dropdown.Option("Manual"),
             ],
-            value="Mechanical",
+            value="Manual",
             on_change=self.changetype,
         )
-        self.promptmessage=ft.TextField(label="PROMPT",expand=True,value="You are the Mechanical Engineer for plant engineering.")
+        self.promptmessage=ft.TextField(label="PROMPT",expand=True,value="")
         self.prompt_row=ft.Row([self.engineertype,self.promptmessage])
         self.new_message_row=ft.Row([self.new_message,self.chatbtn])
         self.chathistory=None
@@ -165,7 +165,10 @@ class VectorQAAI(ft.UserControl):
     
     def subcon_text(self,source_document):
         text_source="DOC: "+source_document.metadata['source']
-        text_page ="PAGE: "+str(int(source_document.metadata['page']))
+        try:
+            text_page ="PAGE: "+str(int(source_document.metadata['page']))
+        except:
+            text_page=""
         origin_text=source_document.page_content
         conc_text=text_source+"\n"+text_page+"\n"+origin_text
         return conc_text
