@@ -10,6 +10,8 @@ import glob
 from uuid import uuid4
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import FAISS
+import re
+
 
 
 OPENAI_API_KEY = None
@@ -26,7 +28,7 @@ def embedding_folder(filepaths:[],openai_api=OPENAI_API_KEY,resultpath=None):
     if os.path.exists(resultpath):
         pass
     else:
-        return
+        os.makedirs(resultpath)
     openai.api_key = openai_api
     embeddings=OpenAIEmbeddings(openai_api_key=openai_api)
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
@@ -46,9 +48,18 @@ def embedding_folder(filepaths:[],openai_api=OPENAI_API_KEY,resultpath=None):
             continue
         document = loader.load()
         text = text_splitter.split_documents(document)
-
+        
         faissdb = FAISS.from_documents(text, embeddings)
-        faissdb.save_local(os.path.join(resultpath,f"{filename}_index"))
+        change_filename=re.sub(r'[<>:"/\\|?*]', '_', filename)
+        directory = os.path.join(resultpath,f"{change_filename}_index")
+        # directory = r"C:/Users/qkrwo/Documents/Docs/manual"  # 슬래시 사용 또는 raw string
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        try:
+            faissdb.save_local(directory)
+        except:
+            continue
+    
         doc_list.append(filename)
         
         if faissdbs==[]:
@@ -57,8 +68,10 @@ def embedding_folder(filepaths:[],openai_api=OPENAI_API_KEY,resultpath=None):
             faissdbs.merge_from(faissdb)
     resultpath=os.path.join(resultpath,"faiss_index")
     if os.path.exists(resultpath):
-        faiss_old=FAISS.load_local(resultpath)
-        faissdbs.merge_from(faiss_old)
-    faissdbs.save_local(os.path.join(resultpath,"faiss_index"))
-    
+        try:
+            faiss_old=FAISS.load_local(resultpath)
+            faissdbs.merge_from(faiss_old)
+        except:
+            pass
+    faissdbs.save_local(resultpath)
     return doc_list

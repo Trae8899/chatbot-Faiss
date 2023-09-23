@@ -72,7 +72,7 @@ class FaissConvert(ft.UserControl):
         self.progress.visible=True
         self.progress.update()
         try:
-            jsonfiles=embedding_folder(self.files,openai_api=self.openapi)
+            jsonfiles=embedding_folder(self.files,openai_api=self.openapi,resultpath=self.indexpath)
             if len(jsonfiles)>0:
                 donelist=" \n".join(jsonfiles)
                 self.donelist.value=donelist
