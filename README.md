@@ -28,3 +28,6 @@ To make things easier, consider modularizing the implementation, especially if y
 By dividing the work into these smaller modules, it will be much more manageable to make modifications. If you're new to this, taking these steps gradually can help you learn effectively.
 
 
+Onefile
+poetry run pyinstaller openai_faiss_chat/main.py --paths "%VIRTUAL_ENV%\Lib\site-packages" --collect-data=langchain --hidden-import=tiktoken_ext.openai_public --hidden-import=tiktoken_ext --onefile -w --name "ENGPT"
+
