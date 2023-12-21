@@ -1,9 +1,0 @@
-flet
-langchain
-openai
-docx2txt
-pandas
-python-dotenv
-tiktoken
-pypdf
-faiss-cpu

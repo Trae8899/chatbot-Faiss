@@ -1,6 +1,6 @@
 import flet as ft
 from chat_layout import Chatlayout
-from popup_color_item import PopupColorItem
+from pageitem.popup_color_item import PopupColorItem
 
 class EngPT(ft.UserControl):
     def __init__(self, page: ft.Page):
@@ -66,6 +66,7 @@ class EngPT(ft.UserControl):
             tabs=[
                 ft.Tab(text="GPT"),
                 ft.Tab(text="Convert"),
+                ft.Tab(text="Merge"),
                 ft.Tab(text="How 2 Use"),
                 ft.Tab(text="Setting"),
             ],
@@ -171,8 +172,10 @@ class EngPT(ft.UserControl):
         elif e.control.selected_index == 1:
             self.page.go("/convert")
         elif e.control.selected_index == 2:
-            self.page.go("/manual")
+            self.page.go("/merge")
         elif e.control.selected_index == 3:
+            self.page.go("/manual")
+        elif e.control.selected_index == 4:
             self.page.go("/setting")
 
     def route_change(self, e):
@@ -183,6 +186,8 @@ class EngPT(ft.UserControl):
             self.layout.set_chat_view()
         elif troute.match("/convert"):
             self.layout.set_convert_view()
+        elif troute.match("/merge"):
+            self.layout.set_merge_view()
         elif troute.match("/manual"):
             self.layout.set_folder_view()
         elif troute.match("/setting"):

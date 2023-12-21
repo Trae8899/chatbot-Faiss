@@ -1,6 +1,8 @@
 import flet as ft
 import os
-from module_langchain.embedding_faiss import embedding_folder
+import sys
+sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
+from module_langchain.embedding_faiss import textfile2faiss
 
 class FaissConvert(ft.UserControl):
     def __init__(self,page:ft.Page):
@@ -37,10 +39,12 @@ class FaissConvert(ft.UserControl):
         )
         self.files=[]
 
-    def pick_files_result(self,e: ft.FilePickerResultEvent):
+    def pick_files_result(self,e=None):
+        
         self.jsonfile.visible=False
         self.jsonfile.update()
         self.donetext.visible=False
+        self.donelist.value=None
         self.donetext.update()
         files=[]
         paths=[]
@@ -56,38 +60,49 @@ class FaissConvert(ft.UserControl):
         self.files=paths
         self.selected_files.update()
 
-    def jsons_Upload(self,e):
+    def jsons_Upload(self,e=None):
         self.donetext.visible=False
         self.donetext.update()
         jsonfiles=[]
         if len(self.files)==0:
             return
-        if self.openapi:
-            pass
-        else:
+        if not self.openapi:
             self.page.show_snack_bar(ft.SnackBar(ft.Text("Setting is required"), open=True))
             return
+        if not os.path.exists(self.indextpath):
+            resultpath=os.path.dirname(self.files[0])
+        # else:
+        #     resultpath=self.indextpath
+
         
-        self.filetext.value="Uploading - "
         self.progress.visible=True
         self.progress.update()
-        try:
-            jsonfiles=embedding_folder(self.files,openai_api=self.openapi,resultpath=self.indexpath)
-            if len(jsonfiles)>0:
-                donelist=" \n".join(jsonfiles)
-                self.donelist.value=donelist
-                self.donetext.visible=True
-                self.donetext.update()
-        except Exception as err:
-            print (err)
+    
+        jsonfiles=[]
+        for file in self.files:
+            try:
+                self.filetext.value="Converting - "+str(os.path.basename(file))
+                self.filetext.update()
+                jsonfile=textfile2faiss(file,openai_api=self.openapi,resultpath=resultpath)
+                jsonfiles.append(jsonfile)
+                
+            except Exception as err:
+                print (err)
+                status_text=str(os.path.basename(file))+"-ERROR"+str(err)
+                jsonfiles.append(status_text)
+            
+            donelist=" \n".join(jsonfiles)
+            self.donelist.value=donelist
+            self.donetext.visible=True
+            self.donetext.update()
+
         self.progress.visible=False
         self.progress.update()
-
 
     def build_page(self):
         self.page.controls.clear()
         self.openapi=self.page.session.get("OPENAI_API_KEY")
-        self.indexpath=self.page.session.get("FAISS_INDEX_PATH")
+        self.indextpath=self.page.session.get("FAISS_INDEX_PATH")
         return ft.Column(
             [
                 self.pick_files_dialog,

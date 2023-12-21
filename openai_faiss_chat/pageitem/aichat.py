@@ -1,6 +1,10 @@
 import flet as ft
-from time import sleep
-from module_langchain.QAchain import ask_asme
+
+import os
+import sys
+sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
+from module_langchain.trans import translate
+from module_langchain.qachain import ask_asme
 
 
 class Message():
@@ -94,6 +98,7 @@ class VectorQAAI(ft.UserControl):
     def __init__(self,chatpage:ft.Page):
         super().__init__()
         self.page=chatpage
+        self.page.on_resize=self.page_resize
         self.page.pubsub.subscribe(self.on_message)
         self.user_name=self.page.session.get("user_name")
         self.new_message = ft.TextField(
@@ -123,10 +128,10 @@ class VectorQAAI(ft.UserControl):
                 ft.dropdown.Option("Electrical"),
                 ft.dropdown.Option("Manual"),
             ],
-            value="Manual",
+            value="Mechanical",
             on_change=self.changetype,
         )
-        self.promptmessage=ft.TextField(label="PROMPT",expand=True,value="")
+        self.promptmessage=ft.TextField(label="PROMPT",expand=True,value="You are the Mechanical Engineer for plant engineering.")
         self.prompt_row=ft.Row([self.engineertype,self.promptmessage])
         self.new_message_row=ft.Row([self.new_message,self.chatbtn])
         self.chathistory=None
@@ -148,16 +153,26 @@ class VectorQAAI(ft.UserControl):
             self.new_message.value = ""
             self.new_message_row.update()
             try:
-        
-                result=ask_asme(query,self.indextpath,chat_history=self.chathistory,prompt_concept=self.promptmessage.value,openai_api=self.openapi)
+                
+                queryen=translate(query,"en")
+                result=ask_asme(queryen,self.indextpath,chat_history=self.chathistory,prompt_concept=self.promptmessage.value,openai_api=self.openapi)
                 print (result)
-                self.chathistory=result['chat_history']
+                if self.chathistory:
+                    self.chathistory+=result['chat_history']
+                else:
+                    self.chathistory=result['chat_history']
                 sub_text1="source1\n"+self.subcon_text(result['source_documents'][0])
                 sub_text2="source2\n"+self.subcon_text(result['source_documents'][1])
-                aichat1=Message(self.engineertype.value+"GPT", result['answer'],subcontents=[sub_text1,sub_text2])
+                
+                answerko=translate(result['answer'],"ko")
+                aichat1=Message(self.engineertype.value+"GPT",answerko+"\n"+"\n"+result['answer'],subcontents=[sub_text1,sub_text2])
+                
+                
+                
                 
             except Exception as err:
                 aichat1=Message(self.engineertype.value+"GPT", "Error:"+str(err))
+            
             self.page.pubsub.send_all(aichat1)
             
         self.new_message_row.visible=True
@@ -165,10 +180,7 @@ class VectorQAAI(ft.UserControl):
     
     def subcon_text(self,source_document):
         text_source="DOC: "+source_document.metadata['source']
-        try:
-            text_page ="PAGE: "+str(int(source_document.metadata['page']))
-        except:
-            text_page=""
+        text_page ="PAGE: "+str(int(source_document.metadata['page']))
         origin_text=source_document.page_content
         conc_text=text_source+"\n"+text_page+"\n"+origin_text
         return conc_text
@@ -190,7 +202,7 @@ class VectorQAAI(ft.UserControl):
         self.openapi=self.page.session.get("OPENAI_API_KEY")
         self.indextpath=self.page.session.get("FAISS_INDEX_PATH")
         self.user_name=self.page.session.get("user_id")
-        
+        self.page_resize()
         return ft.Column([ft.Container(content=ft.Column(
             [ft.Container(content=ft.Column([
                     ft.Container(content=self.prompt_row,padding=ft.padding.symmetric(horizontal=30)),
@@ -202,7 +214,9 @@ class VectorQAAI(ft.UserControl):
             padding=ft.padding.symmetric(horizontal=30)
         )],
         )
-
+    def page_resize(self,e=None):
+        self.chat.height=max(self.page.height-300,400)
+        self.page.update()
 
 if __name__ == "__main__":
     def main(page: ft.Page):

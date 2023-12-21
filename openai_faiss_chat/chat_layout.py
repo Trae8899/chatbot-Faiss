@@ -1,7 +1,11 @@
 import flet as ft
-from AIChat import VectorQAAI
-from setting_api import set_api
-from FaissUpload import FaissConvert
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+from pageitem.aichat import VectorQAAI
+from pageitem.making_faiss import FaissConvert
+from pageitem.merge_faiss import Faissmerge
+from pageitem.setting_api import set_api
 
 class Chatlayout(ft.Row):
     def __init__(self, app ,page: ft.Page, *args, **kwargs):
@@ -11,6 +15,7 @@ class Chatlayout(ft.Row):
         self.vertical_alignment=ft.CrossAxisAlignment.START
         self.gpt=VectorQAAI(self.page)
         self.faissConv=FaissConvert(self.page)
+        self.faissmerge=Faissmerge(self.page)
         self.setmodule=set_api(self.page)
         self.guestauthpage=ft.Column([ft.Text("GUEST Cannot access this page")])
         self.pipinglitmitpage=ft.Column([ft.Text("Only for Piping Eng.")])
@@ -41,8 +46,8 @@ class Chatlayout(ft.Row):
         self.active_view.update
         self.page.update()
 
-    def set_upload_view(self):
-        self.active_view = self.convert.build_page()
+    def set_merge_view(self):
+        self.active_view = self.faissmerge.build_page()
         self.active_view.update
         self.page.update()
 

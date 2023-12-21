@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "openai-faiss-chat"
+version = "0.1.0"
+description = ""
+authors = ["JPark <qkrwogus88@naver.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+openai = "^1.3.7"
+flet = "^0.14.0"
+tiktoken = "^0.5.2"
+pypdf = "^3.17.1"
+docx2txt = "^0.8"
+faiss-cpu = "^1.7.4"
+python-dotenv = "^1.0.0"
+langchain = "^0.0.352"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
